@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build",
+  "command": "/usr/bin/c++  -I\"/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/include\" -std=gnu++17 -arch arm64 -O3 -Wall -Wextra -o CMakeFiles/dgraph_engine.dir/src/Graph.cpp.o -c \"/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/src/Graph.cpp\"",
+  "file": "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/src/Graph.cpp",
+  "output": "CMakeFiles/dgraph_engine.dir/src/Graph.cpp.o"
+},
+{
+  "directory": "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build",
+  "command": "/usr/bin/c++  -I\"/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/include\" -std=gnu++17 -arch arm64 -O3 -Wall -Wextra -o CMakeFiles/dgraph_engine.dir/src/main.cpp.o -c \"/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/src/main.cpp\"",
+  "file": "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/src/main.cpp",
+  "output": "CMakeFiles/dgraph_engine.dir/src/main.cpp.o"
+}
+]

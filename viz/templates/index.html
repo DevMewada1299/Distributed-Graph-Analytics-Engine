@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Distributed Graph Engine Visualization</title>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #mynetwork {
+            width: 100%;
+            height: 600px;
+            border: 1px solid lightgray;
+            background-color: #f9f9f9;
+        }
+        .controls { margin-bottom: 20px; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover { background-color: #45a049; }
+        #status { margin-left: 10px; font-style: italic; color: #555; }
+    </style>
+</head>
+<body>
+
+    <h1>Distributed Graph Analytics Engine</h1>
+    
+    <div class="controls">
+        <button onclick="runAnalysis()">Run Analysis (PageRank + LPA)</button>
+        <span id="status">Ready.</span>
+    </div>
+
+    <div id="mynetwork"></div>
+
+    <script type="text/javascript">
+        var nodes = new vis.DataSet([]);
+        var edges = new vis.DataSet([]);
+        var container = document.getElementById('mynetwork');
+        var data = { nodes: nodes, edges: edges };
+        var options = {
+            nodes: {
+                shape: 'dot',
+                size: 20,
+                font: { size: 14 }
+            },
+            edges: {
+                arrows: 'to'
+            },
+            physics: {
+                stabilization: false
+            }
+        };
+        var network = new vis.Network(container, data, options);
+
+        // Load initial graph
+        fetch('/api/graph')
+            .then(response => response.json())
+            .then(data => {
+                nodes.add(data.nodes);
+                edges.add(data.edges);
+                document.getElementById('status').innerText = `Graph loaded with ${data.nodes.length} nodes and ${data.edges.length} edges.`;
+            });
+
+        function runAnalysis() {
+            document.getElementById('status').innerText = "Running C++ Engine...";
+            
+            fetch('/api/run')
+                .then(response => response.json())
+                .then(results => {
+                    if (results.error) {
+                        alert("Error: " + results.error);
+                        return;
+                    }
+
+                    // Update nodes based on results
+                    var updateArray = [];
+                    var colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33F6', '#F6FF33', '#33FFF6'];
+                    
+                    for (var vid in results) {
+                        var info = results[vid];
+                        var colorIdx = info.community % colors.length;
+                        
+                        updateArray.push({
+                            id: vid,
+                            label: `ID: ${vid}\nPR: ${info.pr.toFixed(4)}\nComm: ${info.community}`,
+                            value: info.pr, // Size by PageRank
+                            color: colors[colorIdx], // Color by Community
+                            title: `PageRank: ${info.pr}\nCommunity: ${info.community}`
+                        });
+                    }
+                    
+                    nodes.update(updateArray);
+                    
+                    // Update options to scale size
+                    network.setOptions({
+                        nodes: {
+                            scaling: {
+                                min: 10,
+                                max: 50,
+                                label: { enabled: true }
+                            }
+                        }
+                    });
+                    
+                    document.getElementById('status').innerText = "Analysis Complete! Nodes sized by PageRank and colored by Community.";
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('status').innerText = "Error running analysis.";
+                });
+        }
+    </script>
+</body>
+</html>

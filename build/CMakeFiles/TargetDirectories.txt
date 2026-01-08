@@ -1,0 +1,3 @@
+/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/dgraph_engine.dir
+/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/edit_cache.dir
+/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/rebuild_cache.dir
