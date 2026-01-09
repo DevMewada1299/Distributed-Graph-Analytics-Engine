@@ -1,15 +1,21 @@
 # Distributed Graph Analytics Engine
 
-A high-performance, distributed graph processing engine built with C++17, designed to execute complex graph algorithms like PageRank and Community Detection (Label Propagation) on large-scale datasets. It features a modular architecture supporting **MPI** for distributed memory communication and **OpenMP** for shared-memory parallelism, along with an interactive web-based visualization tool.
+A high-performance, distributed graph processing engine built with C++17, designed to execute complex graph algorithms like PageRank, BFS, and Community Detection on large-scale datasets. It features a modular architecture supporting **MPI** for distributed memory communication and **OpenMP** for shared-memory parallelism, along with an interactive web-based visualization tool and Machine Learning integration.
 
 ## 🚀 Key Features
 
 *   **Distributed Computing**: Implements a vertex-centric programming model (BSP - Bulk Synchronous Parallel) over MPI.
 *   **Hybrid Parallelism**: Combines MPI for inter-node communication and OpenMP for intra-node multi-threading.
-*   **Efficient Storage**: Uses **Compressed Sparse Row (CSR)** format for memory-efficient graph representation and fast traversal.
-*   **Modular Design**: Templated `Engine` class allows easy implementation of new algorithms.
-*   **Interactive Visualization**: A Flask + Vis.js web interface to visualize graph structures and analysis results in real-time.
-*   **Mock MPI Support**: Includes a mock MPI implementation for seamless development and testing on single-node machines without system MPI installation.
+*   **Comprehensive Algorithms**:
+    *   **PageRank**: For node importance ranking.
+    *   **Label Propagation**: For fast community detection.
+    *   **Breadth-First Search (BFS)**: For shortest path analysis.
+    *   **Connected Components (CC)**: For finding disjoint subgraphs.
+    *   **Random Walk**: For generating graph embeddings (Node2Vec/GraphSAGE).
+*   **Machine Learning Ready**: Includes tools to train node embeddings (Node2Vec) from graph structure for downstream ML tasks.
+*   **Interactive Visualization**: A Flask + Vis.js web interface to visualize graph structures, run algorithms interactively, and edit graphs in real-time.
+*   **Extensible Plugin System**: Easily add custom algorithms without modifying the core engine code.
+*   **Mock MPI Support**: Includes a mock MPI implementation for seamless development and testing on single-node machines.
 
 ---
 
@@ -18,21 +24,16 @@ A high-performance, distributed graph processing engine built with C++17, design
 The system is divided into two main components: the high-performance C++ Backend and the Interactive Frontend.
 
 ### 1. C++ Backend (The Engine)
-*   **`Graph` ([Graph.hpp](include/dgraph/Graph.hpp))**: 
-    *   Loads and partitions the graph across multiple MPI ranks.
-    *   Each rank owns a subset of vertices (1D partitioning) and stores their outgoing edges in CSR format.
-*   **`Engine` ([Engine.hpp](include/dgraph/Engine.hpp))**: 
-    *   Orchestrates the computation supersteps.
-    *   **Scatter Phase**: Parallel iteration (OpenMP) over local vertices to generate messages for neighbors.
-    *   **Communication Phase**: Efficient `MPI_Alltoall` and `MPI_Alltoallv` usage to exchange messages between ranks.
-    *   **Gather/Apply Phase**: Aggregates incoming messages and updates vertex states.
-*   **Algorithms**:
-    *   **PageRank**: Iterative link analysis algorithm to measure node importance. Handles dangling nodes via global reduction.
-    *   **Label Propagation (LPA)**: Fast community detection algorithm where nodes adopt the most frequent label among their neighbors.
+*   **`Graph` ([Graph.hpp](include/dgraph/Graph.hpp))**: Loads and partitions the graph across multiple MPI ranks (1D partitioning, CSR format).
+*   **`Engine` ([Engine.hpp](include/dgraph/Engine.hpp))**: Orchestrates the BSP supersteps (Scatter -> Communicate -> Gather -> Apply).
+*   **`AlgorithmRegistry` ([IAlgorithm.hpp](include/dgraph/IAlgorithm.hpp))**: Manages algorithm discovery and execution via a plugin system.
 
 ### 2. Visualization Frontend
-*   **Flask Server ([app.py](viz/app.py))**: Acts as a bridge between the web UI and the C++ binary. It parses graph files and executes the engine.
-*   **Vis.js**: Renders the graph in the browser, allowing for dynamic coloring (Community) and sizing (PageRank) based on analysis results.
+*   **Flask Server ([app.py](viz/app.py))**: Acts as a bridge between the web UI and the C++ binary. It parses graph files, accepts user inputs (algorithm selection, parameters), and executes the engine.
+*   **Vis.js UI**: Renders the graph in the browser. Supports:
+    *   **Interactive Editing**: Add/remove nodes and edges.
+    *   **Algorithm Selection**: Choose between PageRank, BFS, Community Detection, etc.
+    *   **Dynamic Styling**: Nodes resize/recolor based on analysis results.
 
 ---
 
@@ -40,26 +41,23 @@ The system is divided into two main components: the high-performance C++ Backend
 
 ```
 .
-├── CMakeLists.txt          # Build configuration (Auto-detects MPI/OpenMP)
+├── CMakeLists.txt          # Build configuration
 ├── src/
-│   ├── main.cpp            # Entry point (Driver code)
-│   └── Graph.cpp           # Graph loading and partitioning logic
+│   ├── main.cpp            # Entry point (CLI & Algorithm Runner)
+│   └── Graph.cpp           # Graph loading logic
 ├── include/
-│   ├── mock_mpi.hpp        # Fallback MPI implementation for single-node
-│   └── dgraph/
-│       ├── Graph.hpp       # Graph data structure
-│       ├── Engine.hpp      # Distributed computation engine
-│       ├── MPI_Wrapper.hpp # Toggles between System MPI and Mock MPI
-│       └── algorithms/
-│           ├── PageRank.hpp
-│           └── LabelPropagation.hpp
+│   ├── dgraph/
+│   │   ├── Graph.hpp
+│   │   ├── Engine.hpp
+│   │   ├── IAlgorithm.hpp  # Algorithm Interface
+│   │   ├── algorithms/     # Algorithm Implementations (BFS, PR, CC, etc.)
+│   │   └── plugins/        # Plugin Registration (UserAlgorithms.hpp)
 ├── viz/
 │   ├── app.py              # Flask server
-│   ├── requirements.txt    # Python dependencies
 │   └── templates/
-│       └── index.html      # Visualization frontend
-├── tools/
-│   └── generate_graph.py   # Script to generate synthetic social networks
+│       └── index.html      # Web UI
+├── scripts/
+│   └── train_embeddings.py # ML training script (Node2Vec)
 └── data/                   # Input datasets
 ```
 
@@ -68,103 +66,96 @@ The system is divided into two main components: the high-performance C++ Backend
 ## 🛠️ Build & Installation
 
 ### Prerequisites
-*   **C++ Compiler**: GCC or Clang (supporting C++17)
+*   **C++ Compiler**: GCC or Clang (C++17 support)
 *   **CMake**: Version 3.14+
-*   **Python 3**: For visualization and tools
-*   **(Optional) MPI**: OpenMPI or MPICH. *The system automatically falls back to Mock MPI if not found.*
-*   **(Optional) OpenMP**: For multi-threading.
+*   **Python 3**: For visualization and ML tools
+*   **(Optional) MPI**: OpenMPI or MPICH. *Falls back to Mock MPI if missing.*
 
 ### 1. Build the C++ Engine
 ```bash
-# Create build directory
 mkdir -p build && cd build
-
-# Configure and compile
 cmake ..
-cmake --build .
+make
 ```
-This produces the `dgraph_engine` executable in the `build/` directory.
+This produces the `dgraph_engine` executable in `build/`.
 
-### 2. Set up Visualization
+### 2. Set up Python Environment
 ```bash
-# Create virtual environment
 python3 -m venv venv
 source venv/bin/activate
-
-# Install dependencies
-pip install -r viz/requirements.txt
+pip install -r requirements.txt
 ```
 
 ---
 
 ## 🏃 Usage
 
-### 1. Running from Command Line (CLI)
+### 1. Command Line Interface (CLI)
 
-You can run the engine directly on a dataset. The engine expects an edge list file where the first line is the number of vertices.
+Run the engine directly on a dataset:
 
-**Single Node (Mock Mode or Serial):**
 ```bash
-./build/dgraph_engine data/social_network.txt
+# Syntax: ./dgraph_engine <graph_file> [algorithm] [params...]
+
+# PageRank (Default)
+./build/dgraph_engine data/social_network.txt pr
+
+# Breadth-First Search (Source Node = 0)
+./build/dgraph_engine data/social_network.txt bfs 0
+
+# Connected Components
+./build/dgraph_engine data/social_network.txt cc
+
+# Random Walk (Length=10, Walks=5)
+./build/dgraph_engine data/social_network.txt rw 10 5
 ```
 
-**Distributed (With System MPI):**
-```bash
-mpirun -n 4 ./build/dgraph_engine data/social_network.txt
-```
+### 2. Interactive Visualization
 
-### 2. Running the Visualization
-
-The visualization tool allows you to see the algorithms in action.
-
-1.  **Generate a Dataset** (Optional, if you want a fresh graph):
-    ```bash
-    python3 tools/generate_graph.py data/social_network.txt
-    ```
-
-2.  **Start the Server**:
+1.  **Start the Server**:
     ```bash
     source venv/bin/activate
     python3 viz/app.py
     ```
+2.  **Open Browser**: Go to `http://127.0.0.1:5001`.
+3.  **Features**:
+    *   **Upload**: Upload your own edge list file.
+    *   **Edit**: Click "Edit" to modify the graph visually.
+    *   **Run**: Select an algorithm (e.g., BFS), enter parameters (e.g., Source Node), and click "Run Analysis".
 
-3.  **Open in Browser**:
-    Navigate to `http://127.0.0.1:5001`.
+### 3. Machine Learning (Graph Embeddings)
 
-4.  **Interact**:
-    *   **Upload Graph**: Use the "Upload Graph" section to load your own edge list file (`.txt`).
-    *   **Edit Graph**: Use the "Edit" button on the visualization canvas to add or remove nodes and edges interactively.
-    *   **Run Analysis**: Click "Run Analysis" to execute the C++ engine on the current graph state (uploaded or edited).
-    *   **Result**: Nodes will resize based on their PageRank score and change color based on their detected Community.
+You can generate node embeddings (like Node2Vec) to use in downstream ML tasks.
 
-![Dashboard Screenshot](docs/images/dashboard_screenshot.png)
+1.  **Generate Walks**:
+    ```bash
+    ./build/dgraph_engine data/social_network.txt rw 10 5
+    ```
+    This creates `walks_out_*.txt` files.
+
+2.  **Train Embeddings**:
+    ```bash
+    python3 scripts/train_embeddings.py --walks "walks_out_*.txt" --output embeddings.txt --dim 64
+    ```
+
+---
+
+## 🔌 Custom Extensions
+
+You can add your own algorithms using the Plugin System without modifying the core engine.
+
+1.  Create your algorithm class inheriting from `dgraph::IAlgorithm`.
+2.  Register it with `REGISTER_ALGORITHM`.
+3.  Include it in `include/dgraph/plugins/UserAlgorithms.hpp`.
+
+See **[README_EXTENSIONS.md](README_EXTENSIONS.md)** for a detailed tutorial.
 
 ---
 
 ## 🧪 Algorithm Details
 
-### PageRank
-*   **Logic**: $PR(v) = \frac{1-d}{N} + d \sum_{u \in In(v)} \frac{PR(u)}{OutDeg(u)}$
-*   **Implementation**: 
-    *   Each rank computes contributions for its local vertices.
-    *   Contributions are sent to the owners of destination vertices.
-    *   Dangling nodes (no out-edges) are handled by summing their mass globally (`MPI_Allreduce`) and redistributing it.
-
-### Label Propagation (Community Detection)
-*   **Logic**: Each node initializes with a unique label. In every iteration, a node adopts the label that is most frequent among its neighbors.
-*   **Implementation**:
-    *   **Scatter**: Nodes broadcast their current label to neighbors.
-    *   **Gather**: Nodes count the frequency of received labels (using `std::map` in the Engine's reducer).
-    *   **Apply**: The most frequent label is chosen as the new label.
-
----
-
-## 🔍 Reproducibility Steps
-
-1.  **Clone/Download** the repository.
-2.  **Generate Data**: Run `python3 tools/generate_graph.py data/my_graph.txt`.
-3.  **Build**: Run `cmake -B build && cmake --build build`.
-4.  **Run**: `./build/dgraph_engine data/my_graph.txt`.
-5.  **Visualize**: Start `python3 viz/app.py` and view in browser.
-
-If you encounter "MPI not found", the system is correctly using the **Mock MPI** layer. This is expected behavior on environments without system-level MPI libraries installed.
+*   **PageRank**: Measures node importance. Uses `MPI_Allreduce` for dangling node mass redistribution.
+*   **Label Propagation**: Fast community detection. Nodes adopt the majority label of neighbors.
+*   **BFS**: Computes shortest path distance from a source. Uses level-synchronous expansion.
+*   **Connected Components**: Propagates smallest node ID to find disjoint sets.
+*   **Random Walk**: Simulates random walkers for sampling graph structure.
