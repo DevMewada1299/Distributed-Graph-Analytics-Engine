@@ -496,3 +496,78 @@ events:
         
       exitCode: 2
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/FindMPI.cmake:1286 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/FindMPI.cmake:1330 (_MPI_try_staged_settings)"
+      - "/opt/homebrew/share/cmake/Modules/FindMPI.cmake:1653 (_MPI_check_lang_works)"
+      - "CMakeLists.txt:11 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-kkdRIS"
+      binary: "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-kkdRIS"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: ""
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-kkdRIS'
+        
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_6d92f/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_6d92f.dir/build.make CMakeFiles/cmTC_6d92f.dir/build
+        Building CXX object CMakeFiles/cmTC_6d92f.dir/test_mpi.cpp.o
+        /usr/bin/c++   -std=gnu++17 -arch arm64 -MD -MT CMakeFiles/cmTC_6d92f.dir/test_mpi.cpp.o -MF CMakeFiles/cmTC_6d92f.dir/test_mpi.cpp.o.d -o CMakeFiles/cmTC_6d92f.dir/test_mpi.cpp.o -c "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-kkdRIS/test_mpi.cpp"
+        /Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-kkdRIS/test_mpi.cpp:1:10: fatal error: 'mpi.h' file not found
+            1 | #include <mpi.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_6d92f.dir/test_mpi.cpp.o] Error 1
+        make: *** [cmTC_6d92f/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/share/cmake/Modules/FindOpenMP.cmake:250 (try_compile)"
+      - "/opt/homebrew/share/cmake/Modules/FindOpenMP.cmake:557 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:21 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-NxVMuH"
+      binary: "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-NxVMuH"
+    cmakeVariables:
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: ""
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-NxVMuH'
+        
+        Run Build Command(s): /opt/homebrew/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_3e00f/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_3e00f.dir/build.make CMakeFiles/cmTC_3e00f.dir/build
+        Building CXX object CMakeFiles/cmTC_3e00f.dir/OpenMPTryFlag.cpp.o
+        /usr/bin/c++   -Xclang -fopenmp -std=gnu++17 -arch arm64 -MD -MT CMakeFiles/cmTC_3e00f.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_3e00f.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_3e00f.dir/OpenMPTryFlag.cpp.o -c "/Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-NxVMuH/OpenMPTryFlag.cpp"
+        /Users/devmewada/Documents/trae_projects/Distributed Graph Analytics Engine/build/CMakeFiles/CMakeScratch/TryCompile-NxVMuH/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_3e00f.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_3e00f/fast] Error 2
+        
+      exitCode: 2
+...

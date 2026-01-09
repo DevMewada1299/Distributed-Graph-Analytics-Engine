@@ -4,7 +4,7 @@
     <title>Distributed Graph Engine Visualization</title>
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #ffffff; color: #333333; }
         #mynetwork {
             width: 100%;
             height: 600px;
@@ -22,21 +22,72 @@
             border-radius: 5px;
         }
         button:hover { background-color: #45a049; }
-        #status { margin-left: 10px; font-style: italic; color: #555; }
+        #status { margin-left: 10px; font-style: italic; color: #000000; font-weight: bold; }
+        .control-box {
+            margin-bottom: 15px; 
+            padding: 15px; 
+            background: #e0e0e0; /* Darker grey for better contrast */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        strong { color: #000; }
+        select, input[type="text"] { padding: 8px; font-size: 14px; border-radius: 4px; border: 1px solid #999; }
     </style>
 </head>
 <body>
 
-    <h1>Distributed Graph Analytics Engine</h1>
+    <h1 style="color: #222;">Distributed Graph Analytics Engine</h1>
     
     <div class="controls">
-        <button onclick="runAnalysis()">Run Analysis (PageRank + LPA)</button>
-        <span id="status">Ready.</span>
+        <div class="control-box">
+            <strong>1. Upload Graph:</strong>
+            <input type="file" id="graphFile" accept=".txt">
+            <button onclick="uploadGraph()">Upload</button>
+        </div>
+        
+        <div class="control-box">
+            <strong>2. Edit Graph:</strong> Use the "Edit" button on the graph to add Nodes/Edges.
+        </div>
+
+        <div class="control-box">
+            <strong>3. Analyze:</strong>
+            <select id="algorithm">
+                <option value="all">Run All (PageRank + LPA)</option>
+                <option value="pagerank">PageRank</option>
+                <option value="lpa">Label Propagation (Communities)</option>
+                <option value="bfs">Breadth-First Search (BFS)</option>
+                <option value="cc">Connected Components</option>
+                <option value="kcore">K-Core Decomposition</option>
+            </select>
+            
+            <span id="bfs-options" style="display:none; margin-left: 10px;">
+                Source Node ID: <input type="text" id="bfs-source" value="0" style="width: 50px;">
+            </span>
+
+            <button onclick="runAnalysis()" style="margin-left: 10px;">Run Analysis</button>
+            <span id="status">Ready.</span>
+        </div>
+
+        <div class="control-box">
+            <strong>4. Machine Learning:</strong>
+            <button onclick="runML('node2vec')" style="background-color: #2196F3;">Train Node2Vec Embeddings</button>
+            <span id="ml-status"></span>
+        </div>
     </div>
 
     <div id="mynetwork"></div>
 
     <script type="text/javascript">
+        // Algorithm selection handler
+        document.getElementById('algorithm').addEventListener('change', function() {
+            var algo = this.value;
+            if (algo === 'bfs') {
+                document.getElementById('bfs-options').style.display = 'inline';
+            } else {
+                document.getElementById('bfs-options').style.display = 'none';
+            }
+        });
+
         var nodes = new vis.DataSet([]);
         var edges = new vis.DataSet([]);
         var container = document.getElementById('mynetwork');
@@ -52,9 +103,59 @@
             },
             physics: {
                 stabilization: false
+            },
+            manipulation: {
+                enabled: true,
+                initiallyActive: true,
+                addNode: function(nodeData, callback) {
+                    nodeData.label = prompt("Enter Node Label (ID):", Math.floor(Math.random() * 100));
+                    nodeData.id = nodeData.label; // Use label as ID for simplicity
+                    callback(nodeData);
+                },
+                addEdge: true,
+                editEdge: true,
+                deleteNode: true,
+                deleteEdge: true
             }
         };
         var network = new vis.Network(container, data, options);
+
+        // Upload Graph Function
+        function uploadGraph() {
+            var fileInput = document.getElementById('graphFile');
+            var file = fileInput.files[0];
+            if (!file) {
+                alert("Please select a file first.");
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('file', file);
+
+            document.getElementById('status').innerText = "Uploading...";
+            
+            fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    document.getElementById('status').innerText = "Upload successful! Reloading graph...";
+                    // Reload graph data
+                    nodes.clear();
+                    edges.clear();
+                    nodes.add(data.nodes);
+                    edges.add(data.edges);
+                } else {
+                    alert("Upload failed: " + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('status').innerText = "Upload error.";
+            });
+        }
 
         // Load initial graph
         fetch('/api/graph')
@@ -66,9 +167,27 @@
             });
 
         function runAnalysis() {
-            document.getElementById('status').innerText = "Running C++ Engine...";
+            var algo = document.getElementById('algorithm').value;
+            var bfsSource = document.getElementById('bfs-source').value;
+
+            document.getElementById('status').innerText = "Syncing Graph & Running C++ Engine (" + algo + ")...";
             
-            fetch('/api/run')
+            // Extract current graph data
+            var currentNodes = nodes.get({fields: ['id']});
+            var currentEdges = edges.get({fields: ['from', 'to']});
+
+            fetch('/api/run', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nodes: currentNodes,
+                    edges: currentEdges,
+                    algorithm: algo,
+                    bfs_source: bfsSource
+                })
+            })
                 .then(response => response.json())
                 .then(results => {
                     if (results.error) {
@@ -76,26 +195,66 @@
                         return;
                     }
 
+                    // Reset all nodes first
+                    var allIds = nodes.getIds();
+                    var resetArray = allIds.map(id => ({id: id, color: '#97C2FC', value: 20, title: undefined, label: String(id)}));
+                    nodes.update(resetArray);
+
                     // Update nodes based on results
                     var updateArray = [];
                     var colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33F6', '#F6FF33', '#33FFF6'];
                     
                     for (var vid in results) {
                         var info = results[vid];
-                        var colorIdx = info.community % colors.length;
+                        var update = { id: vid };
                         
-                        updateArray.push({
-                            id: vid,
-                            label: `ID: ${vid}\nPR: ${info.pr.toFixed(4)}\nComm: ${info.community}`,
-                            value: info.pr, // Size by PageRank
-                            color: colors[colorIdx], // Color by Community
-                            title: `PageRank: ${info.pr}\nCommunity: ${info.community}`
-                        });
+                        // Default Label
+                        var labelText = `ID: ${vid}`;
+
+                        // PageRank Logic
+                        if (info.pr !== undefined) {
+                            update.value = info.pr; // Size by PageRank
+                            labelText += `\nPR: ${info.pr.toFixed(4)}`;
+                        }
+                        
+                        // Community Logic
+                        if (info.community !== undefined) {
+                            var colorIdx = info.community % colors.length;
+                            update.color = colors[colorIdx];
+                            labelText += `\nComm: ${info.community}`;
+                        }
+
+                        // BFS Logic
+                        if (info.bfs_dist !== undefined) {
+                            labelText += `\nDist: ${info.bfs_dist}`;
+                            // Gradient color based on distance? Or just label.
+                            // Let's use blue shades
+                            if (info.bfs_dist === 0) update.color = '#FF0000'; // Source
+                            else if (info.bfs_dist < 999999) update.color = '#00FF00'; // Reachable
+                            else update.color = '#CCCCCC'; // Unreachable
+                        }
+
+                        // CC Logic
+                        if (info.cc_id !== undefined) {
+                            var colorIdx = info.cc_id % colors.length;
+                            update.color = colors[colorIdx];
+                            labelText += `\nCC: ${info.cc_id}`;
+                        }
+                        
+                        // K-Core Logic
+                        if (info.k_core !== undefined) {
+                            update.value = info.k_core * 5; // Size by Core number
+                            labelText += `\nCore: ${info.k_core}`;
+                            // Heatmap color?
+                        }
+
+                        update.label = labelText;
+                        updateArray.push(update);
                     }
                     
                     nodes.update(updateArray);
                     
-                    // Update options to scale size
+                    // Update options to scale size if needed
                     network.setOptions({
                         nodes: {
                             scaling: {
@@ -106,12 +265,34 @@
                         }
                     });
                     
-                    document.getElementById('status').innerText = "Analysis Complete! Nodes sized by PageRank and colored by Community.";
+                    document.getElementById('status').innerText = "Analysis Complete!";
                 })
                 .catch(err => {
                     console.error(err);
                     document.getElementById('status').innerText = "Error running analysis.";
                 });
+        }
+
+        function runML(task) {
+             document.getElementById('ml-status').innerText = "Training " + task + "...";
+             
+             fetch('/api/ml', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ task: task })
+             })
+             .then(res => res.json())
+             .then(data => {
+                 if(data.success) {
+                     document.getElementById('ml-status').innerText = "Done! Embeddings saved.";
+                     alert("Embeddings generated!\n" + JSON.stringify(data.embeddings, null, 2));
+                 } else {
+                     document.getElementById('ml-status').innerText = "Error: " + data.error;
+                 }
+             })
+             .catch(err => {
+                 document.getElementById('ml-status').innerText = "Request Failed";
+             });
         }
     </script>
 </body>

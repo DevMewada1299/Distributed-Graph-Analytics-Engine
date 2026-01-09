@@ -49,6 +49,9 @@ public:
         return {&col_ind_[start], &col_ind_[end]};
     }
 
+    int getRank() const { return rank_; }
+    int getSize() const { return size_; }
+
 private:
     MPI_Comm comm_;
     int rank_;

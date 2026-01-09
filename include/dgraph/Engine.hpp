@@ -143,6 +143,8 @@ public:
         }
     }
 
+    int getRank() const { return rank_; }
+
 private:
     Graph& graph_;
     MPI_Comm comm_;

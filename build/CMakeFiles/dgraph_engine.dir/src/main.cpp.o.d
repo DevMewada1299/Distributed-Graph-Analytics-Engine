@@ -796,13 +796,18 @@ CMakeFiles/dgraph_engine.dir/src/main.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/iomanip \
   /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/Graph.hpp \
   /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/Types.hpp \
-  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/algorithms/PageRank.hpp \
-  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/algorithms/../Graph.hpp \
-  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/algorithms/../Engine.hpp \
-  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/algorithms/../MPI_Wrapper.hpp \
-  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/algorithms/LabelPropagation.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/IAlgorithm.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/map \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/BuiltinAlgorithms.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../IAlgorithm.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../algorithms/BFS.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../algorithms/../Graph.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../algorithms/../Engine.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../algorithms/../MPI_Wrapper.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../algorithms/ConnectedComponents.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../algorithms/PageRank.hpp \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../algorithms/LabelPropagation.hpp \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/random \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/bernoulli_distribution.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/uniform_real_distribution.h \
@@ -852,4 +857,26 @@ CMakeFiles/dgraph_engine.dir/src/main.cpp.o: \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/seed_seq.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/student_t_distribution.h \
   /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/uniform_random_bit_generator.h \
-  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/weibull_distribution.h
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__random/weibull_distribution.h \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/../algorithms/RandomWalk.hpp \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/fstream \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/path.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/filesystem \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/copy_options.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/directory_entry.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/file_status.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/file_type.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/perms.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/file_time_type.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__chrono/file_clock.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/filesystem_error.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/operations.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/perm_options.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/space_info.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/directory_iterator.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/directory_options.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/path_iterator.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/recursive_directory_iterator.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/__filesystem/u8path.h \
+  /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/c++/v1/sstream \
+  /Users/devmewada/Documents/trae_projects/Distributed\ Graph\ Analytics\ Engine/include/dgraph/plugins/UserAlgorithms.hpp

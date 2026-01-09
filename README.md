@@ -129,11 +129,12 @@ The visualization tool allows you to see the algorithms in action.
     ```
 
 3.  **Open in Browser**:
-    Navigate to `http://127.0.0.1:5000`.
+    Navigate to `http://127.0.0.1:5001`.
 
 4.  **Interact**:
-    *   The graph will load automatically.
-    *   Click **"Run Analysis"**.
+    *   **Upload Graph**: Use the "Upload Graph" section to load your own edge list file (`.txt`).
+    *   **Edit Graph**: Use the "Edit" button on the visualization canvas to add or remove nodes and edges interactively.
+    *   **Run Analysis**: Click "Run Analysis" to execute the C++ engine on the current graph state (uploaded or edited).
     *   **Result**: Nodes will resize based on their PageRank score and change color based on their detected Community.
 
 ![Dashboard Screenshot](docs/images/dashboard_screenshot.png)

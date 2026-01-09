@@ -1,9 +1,12 @@
 #include "dgraph/MPI_Wrapper.hpp"
 #include <iostream>
 #include <iomanip>
+#include <string>
+#include <vector>
 #include "dgraph/Graph.hpp"
-#include "dgraph/algorithms/PageRank.hpp"
-#include "dgraph/algorithms/LabelPropagation.hpp"
+#include "dgraph/IAlgorithm.hpp"
+#include "dgraph/plugins/BuiltinAlgorithms.hpp"
+#include "dgraph/plugins/UserAlgorithms.hpp"
 
 int main(int argc, char** argv) {
     // 1. Initialize MPI
@@ -16,13 +19,23 @@ int main(int argc, char** argv) {
 
     if (argc < 2) {
         if (rank == 0) {
-            std::cerr << "Usage: " << argv[0] << " <graph_file>" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " <graph_file> [algorithm] [params...]" << std::endl;
+            std::cerr << "Available Algorithms: ";
+            auto& registry = dgraph::AlgorithmRegistry::instance().getAll();
+            for (const auto& pair : registry) {
+                std::cerr << pair.first << " ";
+            }
+            std::cerr << std::endl;
         }
         MPI_Finalize();
         return 1;
     }
 
     std::string filename = argv[1];
+    std::string algo_name = (argc >= 3) ? argv[2] : "default";
+    
+    std::vector<std::string> algo_args;
+    for(int i=3; i<argc; ++i) algo_args.push_back(argv[i]);
 
     try {
         // 2. Load Graph
@@ -30,29 +43,23 @@ int main(int argc, char** argv) {
         if (rank == 0) std::cout << "Loading graph from " << filename << "..." << std::endl;
         graph.loadFromFile(filename);
 
-        // 3. Run PageRank
-        if (rank == 0) std::cout << "\n--- Running PageRank ---" << std::endl;
-        dgraph::PageRank pr_algo(graph);
-        auto pr_results = pr_algo.compute(10, 0.85);
-
-        // 4. Run Label Propagation
-        if (rank == 0) std::cout << "\n--- Running Label Propagation ---" << std::endl;
-        dgraph::LabelPropagation lpa_algo(graph);
-        auto lpa_results = lpa_algo.compute(5);
-
-        // 5. Output Results (Partial)
-        // Each rank prints its own results for its local vertices
-        // Synchronize for clean output
-        for (int r = 0; r < size; ++r) {
-            if (rank == r) {
-                std::cout << "Rank " << rank << " results:" << std::endl;
-                for (dgraph::VertexId i = 0; i < graph.numLocalVertices(); ++i) {
-                    dgraph::VertexId global_id = graph.globalStartId() + i;
-                    std::cout << "  V[" << global_id << "]: PR=" << std::fixed << std::setprecision(4) 
-                              << pr_results[i] << ", Community=" << lpa_results[i] << std::endl;
-                }
+        // 3. Run Algorithm
+        if (algo_name == "default") {
+            // Backward compatibility: Run PR and LPA
+             if (rank == 0) std::cout << "Running default suite (PR + LPA)..." << std::endl;
+             
+             auto* pr = dgraph::AlgorithmRegistry::instance().getAlgorithm("pr");
+             if (pr) pr->run(graph, {});
+             
+             auto* lpa = dgraph::AlgorithmRegistry::instance().getAlgorithm("lpa");
+             if (lpa) lpa->run(graph, {});
+        } else {
+            auto* algo = dgraph::AlgorithmRegistry::instance().getAlgorithm(algo_name);
+            if (algo) {
+                algo->run(graph, algo_args);
+            } else {
+                if (rank == 0) std::cerr << "Unknown algorithm: " << algo_name << std::endl;
             }
-            MPI_Barrier(MPI_COMM_WORLD);
         }
 
     } catch (const std::exception& e) {
