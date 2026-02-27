@@ -2,6 +2,141 @@
 
 A high-performance, distributed graph processing engine built with C++17, designed to execute complex graph algorithms like PageRank, BFS, and Community Detection on large-scale datasets. It features a modular architecture supporting **MPI** for distributed memory communication and **OpenMP** for shared-memory parallelism, along with an interactive web-based visualization tool and Machine Learning integration.
 
+## System Architecture
+'''mermaid
+flowchart TD
+    subgraph INPUT["📥 Input Layer"]
+        F1["Edge List File\n(.txt / .csv)"]
+        F2["User Upload\n(Web UI)"]
+        F3["CLI Arguments\n(algorithm, params)"]
+    end
+
+    subgraph GRAPH["🗂️ Graph Layer — Graph.cpp / Graph.hpp"]
+        G1["Graph Loader\nParse edge list"]
+        G2["1D Partitioning\nDistribute vertices\nacross MPI ranks"]
+        G3["CSR Format\nCompressed Sparse Row\nin-memory representation"]
+    end
+
+    subgraph MPI["🌐 Distributed Layer — MPI"]
+        M1["MPI Rank 0\n(Master)"]
+        M2["MPI Rank 1"]
+        M3["MPI Rank N"]
+        M4["MPI_Allreduce\nGlobal aggregation\n(e.g. dangling mass)"]
+        M5["Mock MPI\nSingle-node fallback"]
+    end
+
+    subgraph OMP["⚡ Shared Memory — OpenMP"]
+        O1["Intra-node\nMulti-threading"]
+        O2["Parallel loops\nover local vertices"]
+    end
+
+    subgraph ENGINE["⚙️ BSP Engine — Engine.hpp"]
+        E1["Superstep Loop"]
+        E2["SCATTER\nSend messages\nto neighbors"]
+        E3["COMMUNICATE\nMPI inter-rank\nmessage exchange"]
+        E4["GATHER\nCollect incoming\nmessages per vertex"]
+        E5["APPLY\nUpdate vertex state\nvia algorithm logic"]
+        E6["Convergence Check\nΔ < threshold\nor max iterations"]
+    end
+
+    subgraph REGISTRY["🔌 Algorithm Registry — IAlgorithm.hpp"]
+        R1["AlgorithmRegistry\nPlugin Discovery"]
+        R2["REGISTER_ALGORITHM\nMacro"]
+        R3["UserAlgorithms.hpp\nPlugin Entry Point"]
+    end
+
+    subgraph ALGOS["📐 Algorithm Implementations"]
+        A1["PageRank\nNode importance\nMPI_Allreduce for\ndangling mass"]
+        A2["Label Propagation\nCommunity Detection\nMajority neighbor label"]
+        A3["BFS\nShortest Path\nLevel-synchronous"]
+        A4["Connected Components\nMin-ID propagation"]
+        A5["Random Walk\nGraph sampling\nfor embeddings"]
+    end
+
+    subgraph ML["🤖 ML Layer"]
+        ML1["Random Walk Output\nwalks_out_*.txt"]
+        ML2["train_embeddings.py\nNode2Vec / GraphSAGE"]
+        ML3["Node Embeddings\n64-dim vectors\nembeddings.txt"]
+        ML4["Downstream\nML Tasks"]
+    end
+
+    subgraph VIZ["🖥️ Visualization Layer"]
+        V1["Flask Server\nviz/app.py\nport 5001"]
+        V2["Vis.js Web UI\nindex.html"]
+        V3["Interactive Graph\nEdit nodes/edges"]
+        V4["Algorithm Runner\nSelect algo + params"]
+        V5["Dynamic Styling\nResize/recolor nodes\nby result"]
+    end
+
+    subgraph OUTPUT["📤 Output Layer"]
+        OUT1["CLI stdout\nRanks / distances / labels"]
+        OUT2["PR Comments\n(if CI integrated)"]
+        OUT3["Visual Graph\nin browser"]
+    end
+
+    %% Input → Graph
+    F1 & F2 --> G1
+    F3 --> E1
+    G1 --> G2 --> G3
+
+    %% Graph → MPI ranks
+    G3 --> M1 & M2 & M3
+    M1 <-->|"MPI Send/Recv"| M2
+    M2 <-->|"MPI Send/Recv"| M3
+    M1 & M2 & M3 --> M4
+    M5 -.->|"dev/test fallback"| M1
+
+    %% MPI + OMP → Engine
+    M1 & M4 --> E1
+    O1 --> O2 --> E2
+
+    %% BSP Superstep cycle
+    E1 --> E2 --> E3 --> E4 --> E5 --> E6
+    E6 -->|"not converged"| E1
+    E6 -->|"converged"| OUT1
+
+    %% Engine → Registry → Algorithms
+    E5 --> R1
+    R1 --> R2 --> R3
+    R3 --> A1 & A2 & A3 & A4 & A5
+
+    %% Algorithms → ML
+    A5 --> ML1 --> ML2 --> ML3 --> ML4
+
+    %% Flask ↔ Engine
+    V1 -->|"subprocess call"| E1
+    V2 --> V3 & V4
+    V4 --> V1
+    E6 -->|"JSON results"| V1
+    V1 --> V5 --> OUT3
+
+    %% File upload path
+    F2 --> V1
+
+    %% Styling
+    classDef inputStyle fill:#0e1a2b,stroke:#00e5ff,color:#00e5ff
+    classDef graphStyle fill:#0d1f18,stroke:#10b981,color:#10b981
+    classDef mpiStyle fill:#1a1030,stroke:#7c3aed,color:#a78bfa
+    classDef ompStyle fill:#1f1800,stroke:#f59e0b,color:#fbbf24
+    classDef engineStyle fill:#0f1f2b,stroke:#38bdf8,color:#38bdf8
+    classDef algoStyle fill:#1a0f2b,stroke:#e879f9,color:#e879f9
+    classDef mlStyle fill:#0d1f18,stroke:#34d399,color:#34d399
+    classDef vizStyle fill:#1f1200,stroke:#fb923c,color:#fb923c
+    classDef outputStyle fill:#1f0d0d,stroke:#f87171,color:#f87171
+    classDef registryStyle fill:#1a1a0d,stroke:#d4d400,color:#d4d400
+
+    class F1,F2,F3 inputStyle
+    class G1,G2,G3 graphStyle
+    class M1,M2,M3,M4,M5 mpiStyle
+    class O1,O2 ompStyle
+    class E1,E2,E3,E4,E5,E6 engineStyle
+    class A1,A2,A3,A4,A5 algoStyle
+    class ML1,ML2,ML3,ML4 mlStyle
+    class V1,V2,V3,V4,V5 vizStyle
+    class OUT1,OUT2,OUT3 outputStyle
+    class R1,R2,R3 registryStyle
+    '''
+
 ## 🚀 Key Features
 
 *   **Distributed Computing**: Implements a vertex-centric programming model (BSP - Bulk Synchronous Parallel) over MPI.
