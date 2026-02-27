@@ -3,7 +3,7 @@
 A high-performance, distributed graph processing engine built with C++17, designed to execute complex graph algorithms like PageRank, BFS, and Community Detection on large-scale datasets. It features a modular architecture supporting **MPI** for distributed memory communication and **OpenMP** for shared-memory parallelism, along with an interactive web-based visualization tool and Machine Learning integration.
 
 ## System Architecture
-'''mermaid
+```mermaid
 flowchart TD
     subgraph INPUT["📥 Input Layer"]
         F1["Edge List File\n(.txt / .csv)"]
@@ -135,7 +135,7 @@ flowchart TD
     class V1,V2,V3,V4,V5 vizStyle
     class OUT1,OUT2,OUT3 outputStyle
     class R1,R2,R3 registryStyle
-    '''
+```
 
 ## 🚀 Key Features
 
